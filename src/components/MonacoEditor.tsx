@@ -39,7 +39,7 @@ const JSON_SCHEMA_DIALECTS = [
   "http://json-schema.org/draft-07/schema#",
   "http://json-schema.org/draft-06/schema#",
   "http://json-schema.org/draft-04/schema#",
-] as const;
+];
 const SUPPORTED_DIALECTS = ["https://json-schema.org/draft/2020-12/schema"];
 
 const VALIDATION_UI = {
