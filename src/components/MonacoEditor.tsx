@@ -17,6 +17,7 @@ import SchemaVisualization from "./SchemaVisualization";
 import FullscreenToggleButton from "./FullscreenToggleButton";
 import { parseSchema } from "../utils/parseSchema";
 import YAML from "js-yaml";
+import type { JSONSchema } from "@apidevtools/json-schema-ref-parser";
 
 type ValidationStatus = {
   status: "success" | "warning" | "error";
@@ -32,7 +33,8 @@ type CreateBrowser = (
 
 const DEFAULT_SCHEMA_ID = "https://studio.ioflux.org/schema";
 const DEFAULT_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
-const SESSION_STORAGE_KEY = "ioflux.schema.editor.content";
+const SESSION_SCHEMA_KEY = "ioflux.schema.editor.content";
+const SESSION_FORMAT_KEY = "ioflux.schema.editor.format";
 
 const JSON_SCHEMA_DIALECTS = [
   "https://json-schema.org/draft/2020-12/schema",
@@ -58,6 +60,26 @@ const VALIDATION_UI = {
   },
 };
 
+type SchemaFormat = "json" | "yaml";
+
+const saveFormat = (key: string, format: SchemaFormat) => {
+  sessionStorage.setItem(key, format);
+};
+
+const loadSchemaJSON = (key: string): any => {
+  const raw = sessionStorage.getItem(key);
+  if (!raw) return defaultSchema;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return defaultSchema;
+  }
+};
+
+const saveSchemaJSON = (key: string, schema: JSONSchema) => {
+  sessionStorage.setItem(key, JSON.stringify(schema, null, 2));
+};
+
 const MonacoEditor = () => {
   const { theme, isFullScreen, containerRef, schemaFormat } =
     useContext(AppContext);
@@ -66,13 +88,12 @@ const MonacoEditor = () => {
     null
   );
 
-  const [schemaText, setSchemaText] = useState<string>(
-    // window.sessionStorage.getItem(SESSION_STORAGE_KEY)?.trim() ??
-    // JSON.stringify(defaultJSONSchema, null, 2)
+  const initialSchemaJSON = loadSchemaJSON(SESSION_SCHEMA_KEY);
 
+  const [schemaText, setSchemaText] = useState<string>(
     schemaFormat === "yaml"
-      ? YAML.dump(defaultSchema)
-      : JSON.stringify(defaultSchema, null, 2)
+      ? YAML.dump(initialSchemaJSON)
+      : JSON.stringify(initialSchemaJSON, null, 2)
   );
 
   const [schemaValidation, setSchemaValidation] = useState<ValidationStatus>({
@@ -80,16 +101,15 @@ const MonacoEditor = () => {
     message: VALIDATION_UI["success"].message,
   });
 
-  // useEffect(() => {
-  //   window.sessionStorage.setItem(SESSION_STORAGE_KEY, schemaText);
-  // }, [schemaText, schemaFormat]);
-
-  // Update schemaText whenever schemaFormat changes
   useEffect(() => {
+    saveFormat(SESSION_FORMAT_KEY, schemaFormat);
+
+    const schemaJSON = loadSchemaJSON(SESSION_SCHEMA_KEY);
+
     setSchemaText(
       schemaFormat === "yaml"
-        ? YAML.dump(defaultSchema)
-        : JSON.stringify(defaultSchema, null, 2)
+        ? YAML.dump(schemaJSON)
+        : JSON.stringify(schemaJSON, null, 2)
     );
   }, [schemaFormat]);
 
@@ -142,6 +162,8 @@ const MonacoEditor = () => {
                 message: VALIDATION_UI["success"].message,
               }
         );
+
+        saveSchemaJSON(SESSION_SCHEMA_KEY, parsedSchema);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
 

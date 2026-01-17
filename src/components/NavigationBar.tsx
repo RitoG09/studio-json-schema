@@ -5,7 +5,8 @@ import { AppContext, type SchemaFormat } from "../contexts/AppContext";
 import FullscreenToggleButton from "./FullscreenToggleButton";
 
 const NavigationBar = () => {
-  const { theme, toggleTheme, changeSchemaFormat } = useContext(AppContext);
+  const { theme, toggleTheme, schemaFormat, changeSchemaFormat } =
+    useContext(AppContext);
 
   return (
     <nav className="h-[8vh] flex justify-between items-center shadow-lg relative z-10">
@@ -31,8 +32,8 @@ const NavigationBar = () => {
         <li>
           <select
             onChange={(e) => changeSchemaFormat(e.target.value as SchemaFormat)}
-            className="text-sm border bg-[var(--bg-color)] text-[var(--dropdown-text-color)] border-[var(--navigation-text-color)] cursor-pointer"
-            defaultValue="json"
+            className="text-sm border rounded-sm bg-[var(--bg-color)] text-[var(--dropdown-text-color)] border-[var(--navigation-text-color)] cursor-pointer"
+            value={schemaFormat}
           >
             <option value="json">JSON</option>
             <option value="yaml">YAML</option>
