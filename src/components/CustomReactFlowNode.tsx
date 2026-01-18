@@ -74,8 +74,8 @@ const CustomNode = ({ data, id }: { data: RFNodeData; id: string }) => {
       </div>
 
       <div className="flex flex-col">
-        {Object.entries(data.nodeData).map(([key, value]) => {
-          const isArray = Array.isArray(value);
+        {Object.entries(data.nodeData).map(([key, keyData]) => {
+          const isArray = Array.isArray(keyData.value);
 
           return (
             <div
@@ -95,7 +95,7 @@ const CustomNode = ({ data, id }: { data: RFNodeData; id: string }) => {
 
               {isArray ? (
                 <div className="flex-col w-full">
-                  {(value as string[]).map((item, index) => (
+                  {(keyData.value as string[]).map((item, index) => (
                     <div
                       ref={(el) => {
                         rowRefs.current[`${id}-${item}`] = el;
@@ -114,7 +114,7 @@ const CustomNode = ({ data, id }: { data: RFNodeData; id: string }) => {
                     rowRefs.current[`${id}-${key}`] = el;
                   }}
                 >
-                  {String(value)}
+                  {keyData.ellipsis ?? String(keyData.value)}
                 </span>
               )}
             </div>
