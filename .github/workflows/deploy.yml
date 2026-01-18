@@ -51,9 +51,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Read version from file
-        VERSION=$(cat VERSION.txt)
+        # Read version from package.json
+        VERSION=$(jq -r '.version' package.json)
         TAG_NAME="v${VERSION}"
+
+        echo "Releasing version: $TAG_NAME"
 
         # Check if tag already exists to avoid errors on re-runs
         if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then

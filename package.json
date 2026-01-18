@@ -1,9 +1,9 @@
 {
-  "name": "visualize-json-schema",
-  "version": "0.0.1",
+  "name": "json-schema-studio",
+  "version": "0.1.2-beta",
   "type": "module",
-  "homepage": "https://jagpreetrahi.github.io/visualize-json-schema/",
-  "repository": "https://github.com/jagpreetrahi/visualize-json-schema",
+  "homepage": "studio.ioflux.org",
+  "repository": "https://github.com/ioflux-org/studio-json-schema",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
