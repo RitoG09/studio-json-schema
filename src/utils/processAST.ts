@@ -15,7 +15,12 @@ export type HandleConfig = {
     position: Position;
 }
 
-export type NodeData = Record<string, { value: unknown, ellipsis?: "{...}" }>;
+type NodeDataValue = {
+    value: unknown;
+    ellipsis?: "{ ... }";
+};
+
+export type NodeData = Record<string, NodeDataValue>;
 
 export type RFNodeData = {
     nodeLabel: string,
@@ -65,7 +70,7 @@ type UpdateNodeOptionalParameters = Partial<{
 }>
 
 type ProcessAST = (params: ProcessASTParams) => void;
-type KeywordHandler = (...args: KeywordHandlerParams) => { key?: string, data: { value: unknown, ellipsis?: "{...}" }, leafNode?: boolean, defs?: boolean };
+type KeywordHandler = (...args: KeywordHandlerParams) => { key?: string, data: NodeDataValue, leafNode?: boolean, defs?: boolean };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
@@ -262,7 +267,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     // "https://json-schema.org/keyword/draft-2020-12/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "$ref", renderedNodes, nodeTitle: "", nodeDepth });
-        return { key: "$ref", data: { value: keywordValue, ellipsis: "{...}" } }
+        return { key: "$ref", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/comment": createBasicKeywordHandler("$comment"),
     "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
@@ -308,17 +313,17 @@ const keywordHandlerMap: KeywordHandlerMap = {
     },
     "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "if", renderedNodes, nodeTitle: "if", nodeDepth });
-        return { key: "if", data: { value: keywordValue, ellipsis: "{...}" } }
+        return { key: "if", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/then": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
         processAST({ ast, schemaUri: value[1] as string, nodes, edges, parentId, childId: "then", renderedNodes, nodeTitle: "then", nodeDepth });
-        return { key: "then", data: { value: value[1], ellipsis: "{...}" } }
+        return { key: "then", data: { value: value[1], ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/else": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
         processAST({ ast, schemaUri: value[1], nodes, edges, parentId, childId: "else", renderedNodes, nodeTitle: "else", nodeDepth });
-        return { key: "else", data: { value: value[1], ellipsis: "{...}" } }
+        return { key: "else", data: { value: value[1], ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/properties": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const propertyNames = [];
@@ -331,7 +336,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     "https://json-schema.org/keyword/additionalProperties": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
         processAST({ ast, schemaUri: value[1], nodes, edges, parentId, childId: "additionalProperties", renderedNodes, nodeTitle: "additionalProperties", nodeDepth });
-        return { key: "additionalProperties", data: { value: value[1], ellipsis: "{...}" } }
+        return { key: "additionalProperties", data: { value: value[1], ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/patternProperties": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
@@ -345,12 +350,12 @@ const keywordHandlerMap: KeywordHandlerMap = {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         processAST({ ast, keywordValue: keywordValue["contains"], nodes, edges, parentId, renderedNodes, nodeTitle: "contains", nodeDepth });
-        return { key: "contains", data: { value: keywordValue, ellipsis: "{...}" } }
+        return { key: "contains", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
         processAST({ ast, schemaUri: value[1], nodes, edges, parentId, childId: "items", renderedNodes, nodeTitle: "items", nodeDepth });
-        return { key: "items", data: { value: value[1], ellipsis: "{...}" } }
+        return { key: "items", data: { value: value[1], ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         const value = keywordValue as string[];
@@ -361,11 +366,11 @@ const keywordHandlerMap: KeywordHandlerMap = {
     },
     "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "not", renderedNodes, nodeTitle: "not", nodeDepth });
-        return { key: "not", data: { value: keywordValue, ellipsis: "{...}" } }
+        return { key: "not", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/propertyNames": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
         processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "propertyNames", renderedNodes, nodeTitle: "propertyNames", nodeDepth });
-        return { key: "propertyNames", data: { value: keywordValue, ellipsis: "{...}" } }
+        return { key: "propertyNames", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
 
     // Validation
