@@ -275,6 +275,41 @@ Ways to contribute:
 - Fix bugs or implement new features
 - Suggest better visual or UX improvement
 
+### Versioning Rules (Important)
+
+We use the `version` field in `package.json` as the single source of truth for releases. Any PR that introduces **application-level changes** (changes that affect the behavior, UI, or functionality of the app) must bump the version appropriately.
+
+We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
+
+Update the version in `package.json` based on the type of change:
+
+| Change Type        | Version Bump | Example        |
+|--------------------|--------------|----------------|
+| Bug fix            | PATCH        | 1.2.3 → 1.2.4  |
+| New feature        | MINOR        | 1.2.3 → 1.3.0  |
+| Breaking change    | MAJOR        | 1.2.3 → 2.0.0  |
+| Pre-release build  | Prerelease   | 1.2.3 → 1.2.4-beta |
+
+### When you do NOT need to bump the version
+
+Do **not** bump the version if your PR only changes:
+
+- `.github/**`
+- Markdown files (`*.md`)
+
+These PRs are treated as non-release changes and will not trigger deployments or releases.
+
+### Enforcement
+>
+> [!IMPORTANT]
+> Our CI will block PRs if:
+>
+> - Application code is changed but `package.json` version is not bumped
+> - The version format is invalid
+> - The version already exists as a Git tag
+>
+> This ensures every release is clean, predictable, and traceable.
+
 ### Getting started
 
 - Fork the repository
