@@ -405,7 +405,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     "https://json-schema.org/keyword/writeOnly": createBasicKeywordHandler("writeOnly"),
 
     // Format Annotation
-    "https://json-schema.org/keyword/format": createBasicKeywordHandler("format"),
+    "https://json-schema.org/keyword/draft-2020-12/format": createBasicKeywordHandler("format"),
 
     // Format Assertion
     // "https://json-schema.org/keyword/format-assertion": createBasicKeywordHandler("format-assertion"),
