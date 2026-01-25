@@ -251,7 +251,13 @@ const fallbackHandler: GetKeywordHandler = (handlerName) => {
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
         return {
-            key, data: { value: key === "unknown" ? JSON.stringify(keywordValue) : keywordValue }, leafNode: true
+            key,
+            data: {
+                value: (key === "unknown") || (key === "examples") ?
+                    JSON.stringify(keywordValue, null, 2)
+                    : keywordValue
+            },
+            leafNode: true
         }
     }
 }
