@@ -251,7 +251,13 @@ const fallbackHandler: GetKeywordHandler = (handlerName) => {
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
         return {
-            key, data: { value: key === "unknown" ? JSON.stringify(keywordValue) : keywordValue }, leafNode: true
+            key,
+            data: {
+                value: (key === "unknown") || (key === "examples") ?
+                    JSON.stringify(keywordValue, null, 2)
+                    : keywordValue
+            },
+            leafNode: true
         }
     }
 }
@@ -405,7 +411,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     "https://json-schema.org/keyword/writeOnly": createBasicKeywordHandler("writeOnly"),
 
     // Format Annotation
-    "https://json-schema.org/keyword/format": createBasicKeywordHandler("format"),
+    "https://json-schema.org/keyword/draft-2020-12/format": createBasicKeywordHandler("format"),
 
     // Format Assertion
     // "https://json-schema.org/keyword/format-assertion": createBasicKeywordHandler("format-assertion"),
@@ -420,13 +426,11 @@ const keywordHandlerMap: KeywordHandlerMap = {
 
     // Unevaluated
     "https://json-schema.org/keyword/unevaluatedProperties": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
-        const value = keywordValue as string[];
-        processAST({ ast, schemaUri: value[1], nodes, edges, parentId, childId: "unevaluatedProperties", renderedNodes, nodeTitle: "unevaluatedProperties", nodeDepth });
-        return { key: "unevaluatedProperties", data: { value: value[1] } }
+        processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "unevaluatedProperties", renderedNodes, nodeTitle: "unevaluatedProperties", nodeDepth });
+        return { key: "unevaluatedProperties", data: { value: keywordValue, ellipsis: "{ ... }" } }
     },
     "https://json-schema.org/keyword/unevaluatedItems": (ast, keywordValue, nodes, edges, parentId, nodeDepth, renderedNodes) => {
-        const value = keywordValue as string[];
-        processAST({ ast, schemaUri: value[1], nodes, edges, parentId, childId: "unevaluatedItems", renderedNodes, nodeTitle: "unevaluatedItems", nodeDepth });
-        return { key: "unevaluatedItems", data: { value: value[1] } }
+        processAST({ ast, schemaUri: keywordValue as string, nodes, edges, parentId, childId: "unevaluatedItems", renderedNodes, nodeTitle: "unevaluatedItems", nodeDepth });
+        return { key: "unevaluatedItems", data: { value: keywordValue, ellipsis: "{ ... }" } }
     }
 };
