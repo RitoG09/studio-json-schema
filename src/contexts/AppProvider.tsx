@@ -25,6 +25,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     ) as SchemaFormat) ?? "json"
   );
 
+  const [isEditorVisible, setIsEditorVisible] = useState(true);
+
+  const toggleEditorVisibility = () => {
+    setIsEditorVisible((prev) => !prev);
+  };
+
   const toggleTheme = () => {
     setTheme((prev) => {
       const next = prev === "light" ? "dark" : "light";
@@ -77,6 +83,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleFullScreen,
     schemaFormat,
     changeSchemaFormat,
+    isEditorVisible,
+    toggleEditorVisibility,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
