@@ -36,8 +36,11 @@ const NODE_HEIGHT = 36;
 const HORIZONTAL_GAP = 150;
 
 // Change 4: Exported interface so parent component can type the ref correctly
+// Change 16: Added getMatchInfo and navigateMatch methods for multi-match navigation
 export interface GraphViewHandle {
   searchNode: (searchString: string) => boolean;
+  getMatchInfo: () => { count: number; currentIndex: number };
+  navigateMatch: (direction: 'next' | 'prev') => void;
 }
 
 // Change 5: Renamed to GraphViewInner and wrapped with forwardRef to expose methods via ref
@@ -54,22 +57,33 @@ const GraphViewInner = forwardRef<GraphViewHandle, { compiledSchema: CompiledSch
   const [edges, setEdges, onEdgeChange] = useEdgesState<GraphEdge>([]);
   const [collisionResolved, setCollisionResolved] = useState(false);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  // Change 9: Track matched nodes and current index for multi-match navigation
+  const [matchedNodes, setMatchedNodes] = useState<GraphNode[]>([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
   // Change 7: New searchNode function that finds a node and centers the view on it
   const searchNode = useCallback((searchString: string): boolean => {
     const searchLower = searchString.toLowerCase();
-    const foundNode = nodes.find((node) => {
-      const label = node.data?.label?.toString().toLowerCase() || "";
-      const nodeId = node.id.toLowerCase();
-      return label.includes(searchLower) || nodeId.includes(searchLower);
+    // Change 10: Use nodeLabel property for searching (as per PR feedback)
+    const foundNodes = nodes.filter((node) => {
+      const nodeLabel = node.data?.nodeLabel?.toString().toLowerCase() || "";
+      return nodeLabel.includes(searchLower);
     });
 
-    if (foundNode && foundNode.measured?.width && foundNode.measured?.height) {
-      const x = foundNode.position.x + foundNode.measured.width / 2;
-      const y = foundNode.position.y + foundNode.measured.height / 2;
+    // Change 11: Sort by depth (hierarchical order) - shallowest first
+    const sortedNodes = foundNodes.sort((a, b) => a.depth - b.depth);
+
+    setMatchedNodes(sortedNodes);
+    setCurrentMatchIndex(0);
+
+    if (sortedNodes.length > 0) {
+      const foundNode = sortedNodes[0];
+      // Change 12: Removed unnecessary width/height check (as per PR feedback)
+      const x = foundNode.position.x + NODE_WIDTH / 2;
+      const y = foundNode.position.y + NODE_HEIGHT / 2;
       setCenter(x, y, { zoom: Math.max(getZoom(), 1), duration: 500 });
       
-      // Highlight the found node by selecting it
+      // Change 13: Highlight the found node by selecting it
       setNodes((nds) =>
         nds.map((n) => ({
           ...n,
@@ -78,13 +92,51 @@ const GraphViewInner = forwardRef<GraphViewHandle, { compiledSchema: CompiledSch
       );
       return true;
     }
+    
+    setMatchedNodes([]);
     return false;
   }, [nodes, setCenter, getZoom, setNodes]);
 
-  // Change 8: Expose searchNode function to parent via ref using useImperativeHandle
+  // Change 14: Function to get current match information for parent component
+  const getMatchInfo = useCallback(() => {
+    return {
+      count: matchedNodes.length,
+      currentIndex: currentMatchIndex
+    };
+  }, [matchedNodes.length, currentMatchIndex]);
+
+  // Change 15: Function to navigate between multiple matches
+  const navigateMatch = useCallback((direction: 'next' | 'prev') => {
+    if (matchedNodes.length === 0) return;
+
+    let newIndex = currentMatchIndex;
+    if (direction === 'next') {
+      newIndex = (currentMatchIndex + 1) % matchedNodes.length;
+    } else {
+      newIndex = (currentMatchIndex - 1 + matchedNodes.length) % matchedNodes.length;
+    }
+
+    setCurrentMatchIndex(newIndex);
+    const foundNode = matchedNodes[newIndex];
+    
+    const x = foundNode.position.x + NODE_WIDTH / 2;
+    const y = foundNode.position.y + NODE_HEIGHT / 2;
+    setCenter(x, y, { zoom: Math.max(getZoom(), 1), duration: 500 });
+    
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        selected: n.id === foundNode.id,
+      }))
+    );
+  }, [matchedNodes, currentMatchIndex, setCenter, getZoom, setNodes]);
+
+  // Change 8: Expose searchNode, getMatchInfo, and navigateMatch functions to parent via ref
   useImperativeHandle(ref, () => ({
     searchNode,
-  }), [searchNode]);
+    getMatchInfo,
+    navigateMatch,
+  }), [searchNode, getMatchInfo, navigateMatch]);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setExpandedNode({
