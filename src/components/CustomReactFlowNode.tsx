@@ -3,8 +3,7 @@ import type { RFNodeData } from "../utils/processAST";
 import { useContext, useLayoutEffect, useRef, useState } from "react";
 import { AppContext } from "../contexts/AppContext";
 
-// Change 24: Added selected prop to enable visual highlighting when node is selected
-const CustomNode = ({ data, id, selected }: { data: RFNodeData; id: string; selected?: boolean }) => {
+const CustomNode = ({ data, id, selected }: { data: RFNodeData; id: string; selected: boolean }) => {
   const { theme } = useContext(AppContext);
 
   const rowRefs = useRef<

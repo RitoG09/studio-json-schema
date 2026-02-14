@@ -12,7 +12,6 @@ import {
   BackgroundVariant,
   useReactFlow,
   type NodeMouseHandler,
-  type ReactFlowInstance,
 } from "@xyflow/react";
 
 import CustomNode from "./CustomReactFlowNode";
