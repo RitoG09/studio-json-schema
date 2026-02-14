@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useContext } from "react";
+import { AppContext } from "../contexts/AppContext";
 import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
 import "@xyflow/react/dist/style.css";
 import dagre from "@dagrejs/dagre";
@@ -15,6 +16,7 @@ import {
 
 import CustomNode from "./CustomReactFlowNode";
 import NodeDetailsPopup from "./NodeDetailsPopup";
+
 import {
   processAST,
   type GraphEdge,
@@ -35,6 +37,7 @@ const GraphView = ({
 }: {
   compiledSchema: CompiledSchema | null;
 }) => {
+  const { setSelectedNodeId } = useContext(AppContext);
   const [expandedNode, setExpandedNode] = useState<{
     nodeId: string;
     data: Record<string, unknown>;
@@ -46,6 +49,7 @@ const GraphView = ({
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    setSelectedNodeId(node.id);
     setExpandedNode({
       nodeId: node.id,
       data: node.data,
@@ -138,11 +142,12 @@ const GraphView = ({
         const strokeWidth = isActive ? 2.5 : 1;
         return {
           ...edge,
-          animated: isActive,
+          animated: !!isActive,
           style: {
             ...edge.style,
             stroke: strokeColor,
             strokeWidth: strokeWidth,
+            zIndex: isActive ? 1000 : 0,
           },
         };
       }),
@@ -225,6 +230,7 @@ const GraphView = ({
         />
         <Controls />
       </ReactFlow>
+
 
       {expandedNode && (
         <NodeDetailsPopup
