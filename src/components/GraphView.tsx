@@ -106,7 +106,7 @@ const GraphView = ({
         };
       })
     );
-  }, [setEdges]);
+  }, []);
 
   const generateNodesAndEdges = useCallback(
     (
@@ -170,13 +170,13 @@ const GraphView = ({
     []
   );
 
-  // Bring selected edges to top
+  // TODO: check if the following approach to bringing the selected edge to the top has any significant performance issues
+  // check if logic can be optimised
   const orderedEdges = useMemo(() => {
     const normal: typeof edges = [];
     const selected: typeof edges = [];
 
     for (const edge of edges) {
-      // Use native selection state
       if (edge.selected) selected.push(edge);
       else normal.push(edge);
     }
@@ -189,14 +189,11 @@ const GraphView = ({
       orderedEdges.map((edge) => {
         const isHovered = edge.id === hoveredEdgeId;
         const isSelected = edge.selected;
-
-        // Use native selection state + hover
         const isActive = isHovered || isSelected;
         const strokeColor = isActive ? edge.data.color : "#666";
         const strokeWidth = isActive ? 2.5 : 1;
         return {
           ...edge,
-          // Remove boolean cast and zIndex as requested by maintainer/refactoring
           animated: isActive,
           style: {
             ...edge.style,
