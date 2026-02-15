@@ -347,9 +347,7 @@ const GraphView = ({
       {expandedNode && (
         <NodeDetailsPopup
           data={expandedNode.data}
-          onClose={() => {
-            setExpandedNode(null);
-          }}
+          onClose={() => setExpandedNode(null)}
         />
       )}
       {/*Error Message */}
