@@ -77,13 +77,13 @@ const GraphView = ({
           nds.map((n) => ({
             ...n,
             selected: n.id === foundNode.id,
-          })),
+          }))
         );
 
         return newIndex;
       });
     },
-    [matchedNodes],
+    [matchedNodes]
   );
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,9 +102,9 @@ const GraphView = ({
         const isConnected = edge.source === node.id || edge.target === node.id;
         return {
           ...edge,
-          selected: isConnected,
+          selected: isConnected
         };
-      }),
+      })
     );
   }, []);
 
@@ -112,7 +112,7 @@ const GraphView = ({
     (
       compiledSchema: CompiledSchema | null,
       nodes: GraphNode[] = [],
-      edges: GraphEdge[] = [],
+      edges: GraphEdge[] = []
     ) => {
       if (!compiledSchema) return;
       const { ast, schemaUri } = compiledSchema;
@@ -129,7 +129,7 @@ const GraphView = ({
 
       return { nodes, edges };
     },
-    [],
+    []
   );
 
   const getLayoutedElements = useCallback(
@@ -202,7 +202,7 @@ const GraphView = ({
           },
         };
       }),
-    [orderedEdges, hoveredEdgeId],
+    [orderedEdges, hoveredEdgeId]
   );
 
   const resetSearchState = useCallback(() => {
