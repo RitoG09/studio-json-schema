@@ -54,6 +54,7 @@ const GraphView = ({
   const [searchString, setSearchString] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(true);
+  const [hasActiveSearch, setHasActiveSearch] = useState(false);
   const matchCount = matchedNodes.length;
 
   const navigateMatch = useCallback(
@@ -276,10 +277,14 @@ const GraphView = ({
 
     const timeout = setTimeout(() => {
       if (!trimmed) {
+        if (hasActiveSearch) {
+          resetSearchState();
+          setHasActiveSearch(false);
+        }
+
         setMatchedNodes([]);
         setCurrentMatchIndex(0);
         setErrorMessage("");
-        resetSearchState();
         return;
       }
 
@@ -307,7 +312,7 @@ const GraphView = ({
           });
           return changed ? newNodes : nds;
         });
-
+        setHasActiveSearch(true);
         setErrorMessage("");
       } else {
         setErrorMessage(`${trimmed} is not in schema`);
