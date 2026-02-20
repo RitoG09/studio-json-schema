@@ -154,15 +154,11 @@ const MonacoEditor = () => {
       return;
     }
 
-    // Use jsonc-parser to find the location in the text
     const text = model.getValue();
 
-    // Extract fragment from URI (e.g., #/properties/name)
     const uriParts = selectedNodeId.split("#");
     const fragment = uriParts.length > 1 ? uriParts[1] : "";
 
-    // Convert JSON Pointer string to path array for jsonc-parser
-    // e.g. "/properties/name" -> ["properties", "name"]
     const path = fragment
       .split("/")
       .filter((segment) => segment !== "")
@@ -171,14 +167,11 @@ const MonacoEditor = () => {
         return /^\d+$/.test(decoded) ? parseInt(decoded, 10) : decoded;
       });
 
-    // Get AST using jsonc-parser
     const tree = parseTree(text);
     if (!tree) return;
 
-    // Find node at path
     const node = findNodeAtLocation(tree, path);
 
-    // If node is found, scroll to it
     if (node) {
       const startPos = model.getPositionAt(node.offset);
       const endPos = model.getPositionAt(node.offset + node.length);
@@ -200,7 +193,6 @@ const MonacoEditor = () => {
         },
       };
 
-      // Remove old decorations and add new one
       const oldDecorations = model
         .getAllDecorations()
         .filter((d: any) => d.options.className === "monaco-highlight-line")
@@ -264,13 +256,13 @@ const MonacoEditor = () => {
         setSchemaValidation(
           !dialect && typeof parsedSchema !== "boolean"
             ? {
-              status: "warning",
-              message: VALIDATION_UI["warning"].message,
-            }
+                status: "warning",
+                message: VALIDATION_UI["warning"].message,
+              }
             : {
-              status: "success",
-              message: VALIDATION_UI["success"].message,
-            }
+                status: "success",
+                message: VALIDATION_UI["success"].message,
+              }
         );
 
         saveSchemaJSON(SESSION_SCHEMA_KEY, copy);
