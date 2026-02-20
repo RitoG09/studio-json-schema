@@ -99,7 +99,17 @@ const GraphView = ({
       nodeId: node.id,
       data: node.data,
     });
-  }, [setSelectedNodeId]);
+    // Select connected edges programmatically to allow native selection handling
+    setEdges((eds) =>
+      eds.map((edge) => {
+        const isConnected = edge.source === node.id || edge.target === node.id;
+        return {
+          ...edge,
+          selected: isConnected
+        };
+      })
+    );
+  }, [setSelectedNodeId, setEdges]);
 
   const generateNodesAndEdges = useCallback(
     (
@@ -163,12 +173,26 @@ const GraphView = ({
     []
   );
 
+  // TODO: check if the following approach to bringing the selected edge to the top has any significant performance issues
+  // check if logic can be optimised
+  const orderedEdges = useMemo(() => {
+    const normal: typeof edges = [];
+    const selected: typeof edges = [];
+
+    for (const edge of edges) {
+      if (edge.selected) selected.push(edge);
+      else normal.push(edge);
+    }
+
+    return [...normal, ...selected];
+  }, [edges]);
+
   const animatedEdges = useMemo(
     () =>
-      edges.map((edge) => {
+      orderedEdges.map((edge) => {
         const isHovered = edge.id === hoveredEdgeId;
-        // Only highlight on hover, ignore selection as per user request
-        const isActive = isHovered;
+        const isSelected = edge.selected;
+        const isActive = isHovered || isSelected;
         const strokeColor = isActive ? edge.data.color : "#666";
         const strokeWidth = isActive ? 2.5 : 1;
         return {
@@ -181,7 +205,7 @@ const GraphView = ({
           },
         };
       }),
-    [edges, hoveredEdgeId]
+    [orderedEdges, hoveredEdgeId]
   );
 
   useEffect(() => {
@@ -350,7 +374,7 @@ const GraphView = ({
           type="text"
           maxLength={30}
           placeholder="search node"
-          className="outline-none text-[var(--bottom-bg-color)] border-b-2 text-center w-[150px]"
+          className="outline-none text-[var(--text-color)] border-b-2 border-[var(--text-color)] text-center w-[150px]"
           onChange={handleChange}
         />
 

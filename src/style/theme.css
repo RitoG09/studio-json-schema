@@ -82,3 +82,7 @@
   background-color: var(--monaco-highlight-bg);
   width: 100% !important;
 }
+/* Smooth transition for editor panel toggle � only when triggered by button */
+.panel-animating [data-panel] {
+    transition: flex-basis 300ms ease, flex-grow 300ms ease;
+}

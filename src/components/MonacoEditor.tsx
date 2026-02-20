@@ -1,6 +1,11 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { parseTree, findNodeAtLocation } from "jsonc-parser";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import {
+  Panel,
+  PanelGroup,
+  PanelResizeHandle,
+  type ImperativePanelHandle,
+} from "react-resizable-panels";
 // INFO: modifying the following import statement to (import type { SchemaObject } from "@hyperjump/json-schema/draft-2020-12") creates error;
 import { type SchemaObject } from "@hyperjump/json-schema/draft-2020-12";
 // Side-effect import removed
@@ -18,6 +23,7 @@ import defaultSchema from "../data/defaultJSONSchema.json";
 import { AppContext } from "../contexts/AppContext";
 import SchemaVisualization from "./SchemaVisualization";
 import FullscreenToggleButton from "./FullscreenToggleButton";
+import EditorToggleButton from "./EditorToggleButton";
 import { parseSchema } from "../utils/parseSchema";
 import YAML from "js-yaml";
 import type { JSONSchema } from "@apidevtools/json-schema-ref-parser";
@@ -48,20 +54,20 @@ const JSON_SCHEMA_DIALECTS = [
 ];
 const SUPPORTED_DIALECTS = ["https://json-schema.org/draft/2020-12/schema"];
 
-const VALIDATION_UI = {
+const getValidationUI = (theme: "light" | "dark") => ({
   success: {
     message: "✓ Valid JSON Schema",
     className: "text-green-400 font-semibold",
   },
   warning: {
     message: `⚠ Schema dialect not provided. Using default dialect: ${DEFAULT_SCHEMA_DIALECT}`,
-    className: "text-yellow-400",
+    className: theme === "dark" ? "text-yellow-400" : "text-amber-800",
   },
   error: {
     message: "✗ ",
     className: "text-red-400",
   },
-};
+});
 
 type SchemaFormat = "json" | "yaml";
 
@@ -88,6 +94,7 @@ const MonacoEditor = () => {
     useContext(AppContext);
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const editorPanelRef = useRef<ImperativePanelHandle>(null);
 
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -105,10 +112,33 @@ const MonacoEditor = () => {
       : JSON.stringify(initialSchemaJSON, null, 2)
   );
 
+  const VALIDATION_UI = getValidationUI(theme);
+
   const [schemaValidation, setSchemaValidation] = useState<ValidationStatus>({
     status: "success",
     message: VALIDATION_UI["success"].message,
   });
+
+  const [editorVisible, setEditorVisible] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const toggleEditorVisibility = () => {
+    if (!editorPanelRef.current) return;
+
+    setIsAnimating(true);
+
+    if (editorVisible) {
+      editorPanelRef.current.collapse();
+    } else {
+      editorPanelRef.current.expand();
+    }
+
+    setEditorVisible((prev) => !prev);
+
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 300);
+  };
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -234,13 +264,13 @@ const MonacoEditor = () => {
         setSchemaValidation(
           !dialect && typeof parsedSchema !== "boolean"
             ? {
-                status: "warning",
-                message: VALIDATION_UI["warning"].message,
-              }
+              status: "warning",
+              message: VALIDATION_UI["warning"].message,
+            }
             : {
-                status: "success",
-                message: VALIDATION_UI["success"].message,
-              }
+              status: "success",
+              message: VALIDATION_UI["success"].message,
+            }
         );
 
         saveSchemaJSON(SESSION_SCHEMA_KEY, copy);
@@ -258,7 +288,11 @@ const MonacoEditor = () => {
   }, [schemaText, schemaFormat]);
 
   return (
-    <div ref={containerRef} className="h-[92vh] flex flex-col">
+    <div
+      ref={containerRef}
+      className={`h-[92vh] flex flex-col ${isAnimating ? "panel-animating" : ""
+        }`}
+    >
       {isFullScreen && (
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">
@@ -267,7 +301,12 @@ const MonacoEditor = () => {
         </div>
       )}
       <PanelGroup direction="horizontal">
-        <Panel className="flex flex-col" minSize={10} defaultSize={25}>
+        <Panel
+          className="flex flex-col"
+          defaultSize={25}
+          ref={editorPanelRef}
+          collapsible
+        >
           <Editor
             height="90%"
             width="100%"
@@ -287,7 +326,16 @@ const MonacoEditor = () => {
             </div>
           </div>
         </Panel>
-        <PanelResizeHandle className="w-[1px] bg-gray-400" />
+        <PanelResizeHandle className="w-[1px] bg-gray-400 relative">
+          <div>
+            <EditorToggleButton
+              className={"absolute top-2 left-2 z-10"}
+              editorVisible={editorVisible}
+              toggleEditorVisibility={toggleEditorVisibility}
+            />
+          </div>
+        </PanelResizeHandle>
+
         <Panel
           minSize={60}
           className="flex flex-col relative bg-[var(--visualize-bg-color)]"
@@ -298,4 +346,5 @@ const MonacoEditor = () => {
     </div>
   );
 };
+
 export default MonacoEditor;
