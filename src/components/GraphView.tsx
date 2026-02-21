@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState, useMemo, useContext } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+  useContext,
+  useRef,
+} from "react";
 import { AppContext } from "../contexts/AppContext";
 import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
 import "@xyflow/react/dist/style.css";
@@ -41,8 +48,9 @@ const GraphView = ({
 }: {
   compiledSchema: CompiledSchema | null;
 }) => {
+  const { setCenter, getZoom, fitView } = useReactFlow();
   const { selectedNode, setSelectedNode } = useContext(AppContext);
-  const { setCenter, getZoom } = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [nodes, setNodes, onNodeChange] = useNodesState<GraphNode>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<GraphEdge>([]);
@@ -260,6 +268,26 @@ const GraphView = ({
   }, [errorMessage]);
 
   useEffect(() => {
+    if (!containerRef.current) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fitView({ duration: 800, padding: 0.05 });
+      }, 100);
+    });
+
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
     const trimmed = searchString.trim();
 
     const timeout = setTimeout(() => {
@@ -305,7 +333,7 @@ const GraphView = ({
   }, [searchString, nodes]);
 
   return (
-    <div className="relative w-full h-full">
+    <div ref={containerRef} className="relative w-full h-full">
       <ReactFlow
         nodes={nodes}
         edges={animatedEdges}
@@ -314,7 +342,6 @@ const GraphView = ({
         onEdgesChange={onEdgeChange}
         deleteKeyCode={null}
         nodeTypes={nodeTypes}
-        fitView
         minZoom={0.05}
         maxZoom={5}
         onEdgeMouseEnter={(_, edge) => setHoveredEdgeId(edge.id)}
